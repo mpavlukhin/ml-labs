@@ -1,6 +1,9 @@
 import argparse
 
+from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
+
+import numpy as np
 
 from sklearn.datasets.samples_generator import make_blobs
 from sklearn.mixture import GaussianMixture
@@ -28,15 +31,40 @@ def generate_blobs_points_sample(sample_size, blobs_centers_number):
     return X
 
 
-def get_gaussian_EM(X):
-    gmm = GaussianMixture(n_components=3).fit(X)
+def get_gaussian_EM(X, clusters_num):
+    gmm = GaussianMixture(n_components=clusters_num, covariance_type='full').fit(X)
     labels = gmm.predict(X)
 
-    return labels
+    return labels, gmm
 
 
-def show_plot(X, labels):
-    plt.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='viridis')
+def draw_ellipse(position, covariance, ax=None, **kwargs):
+    """Draw an ellipse with a given position and covariance"""
+    ax = ax or plt.gca()
+
+    # Convert covariance to principal axes
+    if covariance.shape == (2, 2):
+        U, s, Vt = np.linalg.svd(covariance)
+        angle = np.degrees(np.arctan2(U[1, 0], U[0, 0]))
+        width, height = 2 * np.sqrt(s)
+    else:
+        angle = 0
+        width, height = 2 * np.sqrt(covariance)
+
+    # Draw the Ellipse
+    for nsig in range(1, 4):
+        ax.add_patch(Ellipse(position, nsig * width, nsig * height,
+                             angle, **kwargs))
+
+
+def show_plot(X, labels, gmm):
+    ax = plt.gca()
+    ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='viridis', zorder=2)
+    ax.axis('equal')
+
+    w_factor = 0.2 / gmm.weights_.max()
+    for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+        draw_ellipse(pos, covar, alpha=w * w_factor)
 
     plt.show()
 
@@ -46,9 +74,9 @@ def main():
     args = parser.parse_args()
 
     blobs_points_sample = generate_blobs_points_sample(args.size, args.centers)
-    predicted_labels = get_gaussian_EM(blobs_points_sample)
+    predicted_labels, gmm = get_gaussian_EM(blobs_points_sample, args.centers)
 
-    show_plot(blobs_points_sample, predicted_labels)
+    show_plot(blobs_points_sample, predicted_labels, gmm)
 
 
 if __name__ == "__main__":
