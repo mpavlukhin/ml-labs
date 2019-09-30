@@ -1,6 +1,7 @@
 import argparse
 
 from sklearn.datasets.samples_generator import make_blobs
+from sklearn.mixture import GaussianMixture
 
 
 def get_args_parser():
@@ -25,11 +26,19 @@ def generate_blobs_points_sample(sample_size, blobs_centers_number):
     return X
 
 
+def get_gaussian_EM(X):
+    gmm = GaussianMixture(n_components=3).fit(X)
+    labels = gmm.predict(X)
+
+    return labels
+
+
 def main():
     parser = get_args_parser()
     args = parser.parse_args()
 
     blobs_points_sample = generate_blobs_points_sample(args.size, args.centers)
+    predicted_labels = get_gaussian_EM(blobs_points_sample)
 
 
 if __name__ == "__main__":
