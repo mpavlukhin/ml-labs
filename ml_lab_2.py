@@ -11,7 +11,9 @@ from sklearn.mixture import GaussianMixture
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
-        description='ML Lab 2'
+        description='This script uses EM algorithm '
+                    'for defining Gaussian clusters '
+                    'and show plot for visualization'
     )
 
     parser.add_argument('-s', '--size', type=int, default='500', help='An integer for sample size')
