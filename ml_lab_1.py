@@ -25,7 +25,7 @@ UNIFORM_PDF = uniform_pdf
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
-        description='This scripts uses Parzen window density estimation '
+        description='This script uses Parzen window density estimation '
                     'for building probability distributions '
                     'and saves animation to file'
     )
